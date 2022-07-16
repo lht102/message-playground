@@ -3,8 +3,8 @@ module github.com/lht102/message-playground/jobworker
 go 1.18
 
 require (
-	ariga.io/atlas v0.4.2
-	entgo.io/ent v0.10.2-0.20220502113020-4ac82f5bb3f0
+	ariga.io/atlas v0.5.0
+	entgo.io/ent v0.11.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
