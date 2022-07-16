@@ -18,6 +18,10 @@ lint:
 test:
 	go test ./... -v -race -cover -coverprofile=c.out -covermode=atomic
 
+.PHONY: migrate-create
+migrate-create:
+	go run -mod=mod cmd/migrate/main.go $(name)
+
 .PHONY: build
 build:
 	@rm -rf bin/

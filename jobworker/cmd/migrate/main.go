@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	"ariga.io/atlas/sql/migrate"
+	atlas "ariga.io/atlas/sql/migrate"
+	"ariga.io/atlas/sql/sqltool"
 	"entgo.io/ent/dialect/sql/schema"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/lht102/message-playground/jobworker/config"
@@ -23,13 +24,18 @@ func main() {
 	}
 	defer client.Close()
 
-	dir, err := migrate.NewLocalDir("../../migrations")
+	dir, err := atlas.NewLocalDir("./migrations")
 	if err != nil {
 		// nolint: gocritic
 		log.Fatalf("Failed creating atlas migration directory: %v", err)
 	}
 
-	if err := client.Schema.NamedDiff(ctx, os.Args[1], schema.WithDir(dir), schema.WithSumFile()); err != nil {
+	opts := []schema.MigrateOption{
+		schema.WithDir(dir),
+		schema.WithFormatter(sqltool.GolangMigrateFormatter),
+	}
+
+	if err := client.Schema.NamedDiff(ctx, os.Args[1], opts...); err != nil {
 		log.Fatalf("Failed creating schema resources: %v", err)
 	}
 }
