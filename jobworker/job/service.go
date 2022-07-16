@@ -8,7 +8,6 @@ import (
 	jobworker "github.com/lht102/message-playground/jobworker"
 	"github.com/lht102/message-playground/jobworker/api"
 	"github.com/lht102/message-playground/jobworker/ent"
-	"github.com/lht102/message-playground/jobworker/ent/job"
 	"go.uber.org/zap"
 )
 
@@ -59,9 +58,7 @@ func (s *Service) GetJob(
 	ctx context.Context,
 	uuid uuid.UUID,
 ) (jobworker.Job, error) {
-	job, err := s.entClient.Job.Query().
-		Where(job.IDEQ(uuid)).
-		Only(ctx)
+	job, err := s.entClient.Job.Get(ctx, uuid)
 	if err != nil {
 		return jobworker.Job{}, fmt.Errorf("get job by id: %w", err)
 	}
