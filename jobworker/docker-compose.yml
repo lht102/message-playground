@@ -1,0 +1,48 @@
+version: '3.9'
+services:
+  jobworker:
+    build:
+      context: .
+      target: runtime
+    image: jobworker
+    ports:
+      - "8081:8081"
+    environment:
+      REST_PORT: 8081
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DATABASE: jobworker
+      MYSQL_PROTOCOL: tcp
+      MYSQL_MAX_OPEN_CONNS: 8
+      MYSQL_MAX_IDLE_CONNS: 16
+      MYSQL_ADDRESS: mysql
+      NATS_PROTOCOL: nats
+      NATS_ADDRESS: nats
+    depends_on:
+      mysql:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    networks:
+      - backend
+  mysql:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: jobworker
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - backend
+  nats:
+    image: nats:2.8
+    command: ["-js"]
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
