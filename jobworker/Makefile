@@ -1,4 +1,5 @@
 SHELL := /bin/sh
+MIGRATION_PATH := ./migrations/
 
 -include .env.$(ENV)
 export
@@ -21,6 +22,16 @@ test:
 .PHONY: migrate-create
 migrate-create:
 	go run -mod=mod cmd/migrate/main.go $(name)
+
+.PHONY: migrate
+migrate:
+	@migrate -path $(MIGRATION_PATH) \
+		-database "mysql://$(MYSQL_USERNAME):$(MYSQL_PASSWORD)@$(MYSQL_PROTOCOL)($(MYSQL_ADDRESS))/$(MYSQL_DATABASE)" up
+
+.PHONY: migrate-rollback
+migrate-rollback:
+	@migrate -path $(MIGRATION_PATH) \
+		-database "mysql://$(MYSQL_USERNAME):$(MYSQL_PASSWORD)@$(MYSQL_PROTOCOL)($(MYSQL_ADDRESS))/$(MYSQL_DATABASE)" down 1
 
 .PHONY: mocks
 mocks:
