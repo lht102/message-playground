@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	jobworker "github.com/lht102/message-playground/jobworker"
@@ -29,12 +30,21 @@ func (Job) Fields() []ent.Field {
 			NotEmpty(),
 		field.Time("completed_at").
 			Optional().
-			Nillable(),
+			Nillable().
+			SchemaType(map[string]string{
+				dialect.MySQL: "datetime(6)",
+			}),
 		field.Time("created_at").
-			Default(time.Now),
+			Default(time.Now).
+			SchemaType(map[string]string{
+				dialect.MySQL: "datetime(6)",
+			}),
 		field.Time("updated_at").
 			Default(time.Now).
-			UpdateDefault(time.Now),
+			UpdateDefault(time.Now).
+			SchemaType(map[string]string{
+				dialect.MySQL: "datetime(6)",
+			}),
 	}
 }
 

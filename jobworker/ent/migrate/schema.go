@@ -14,9 +14,9 @@ var (
 		{Name: "request_uuid", Type: field.TypeUUID, Unique: true},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"QUEUED", "PROCESSING", "COMPLETED"}},
 		{Name: "description", Type: field.TypeString, Size: 255},
-		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime(6)"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime(6)"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime(6)"}},
 	}
 	// JobsTable holds the schema information for the "jobs" table.
 	JobsTable = &schema.Table{
