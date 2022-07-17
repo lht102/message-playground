@@ -22,6 +22,10 @@ test:
 migrate-create:
 	go run -mod=mod cmd/migrate/main.go $(name)
 
+.PHONY: mocks
+mocks:
+	mockery --name=Service --with-expecter
+
 .PHONY: build
 build:
 	@rm -rf bin/
