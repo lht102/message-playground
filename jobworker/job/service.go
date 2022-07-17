@@ -66,42 +66,58 @@ func (s *Service) GetJob(
 	return ent.ParseJobFromModel(job), nil
 }
 
-func (s *Service) RunBackgroundWorker(ctx context.Context) error {
-	if err := s.messageBus.SubscribeJob(ctx, "jobworker_queue", func(resp api.JobResponse) error {
-		job, err := s.createOrUpdateJob(ctx, func(ctx context.Context, jc *ent.JobClient) (*ent.Job, error) {
-			job, err := jc.UpdateOneID(resp.UUID).
-				SetState(jobworker.JobStateProcessing).
-				Save(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("update job to processing state: %w", err)
-			}
+func (s *Service) ExecuteJob(
+	ctx context.Context,
+	uuid uuid.UUID,
+) error {
+	createdJob, err := s.GetJob(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("get job: %w", err)
+	}
 
-			return job, nil
-		})
+	if createdJob.State == jobworker.JobStateCompleted {
+		return nil
+	}
+
+	_, err = s.createOrUpdateJob(ctx, func(ctx context.Context, jc *ent.JobClient) (*ent.Job, error) {
+		job, err := jc.UpdateOneID(uuid).
+			SetState(jobworker.JobStateProcessing).
+			Save(ctx)
 		if err != nil {
-			s.logger.Error("Failed to update job to processing state", zap.Error(err))
-
-			return err
+			return nil, fmt.Errorf("update job to processing state: %w", err)
 		}
 
-		// doing some work
-		job.Execute()
+		return job, nil
+	})
+	if err != nil {
+		return err
+	}
 
-		_, err = s.createOrUpdateJob(ctx, func(ctx context.Context, jc *ent.JobClient) (*ent.Job, error) {
-			job, err := jc.UpdateOneID(job.UUID).
-				SetState(job.State).
-				SetCompletedAt(*job.CompletedAt).
-				Save(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("update job to completed state: %w", err)
-			}
+	// doing some work
+	createdJob.Execute()
 
-			return job, nil
-		})
+	_, err = s.createOrUpdateJob(ctx, func(ctx context.Context, jc *ent.JobClient) (*ent.Job, error) {
+		job, err := jc.UpdateOneID(createdJob.UUID).
+			SetState(createdJob.State).
+			SetCompletedAt(*createdJob.CompletedAt).
+			Save(ctx)
 		if err != nil {
-			s.logger.Error("Failed to update job to completed state", zap.Error(err))
+			return nil, fmt.Errorf("update job to completed state: %w", err)
+		}
 
-			return err
+		return job, nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) RunBackgroundWorker(ctx context.Context) error {
+	if err := s.messageBus.SubscribeJob(ctx, "jobworker_queue", func(resp api.JobResponse) error {
+		if err := s.ExecuteJob(ctx, resp.UUID); err != nil {
+			return fmt.Errorf("execute job: %w", err)
 		}
 
 		return nil

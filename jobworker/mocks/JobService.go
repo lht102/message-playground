@@ -69,6 +69,44 @@ func (_c *JobService_CreateJob_Call) Return(_a0 jobworker.Job, _a1 error) *JobSe
 	return _c
 }
 
+// ExecuteJob provides a mock function with given fields: ctx, _a1
+func (_m *JobService) ExecuteJob(ctx context.Context, _a1 uuid.UUID) error {
+	ret := _m.Called(ctx, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// JobService_ExecuteJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExecuteJob'
+type JobService_ExecuteJob_Call struct {
+	*mock.Call
+}
+
+// ExecuteJob is a helper method to define mock.On call
+//  - ctx context.Context
+//  - _a1 uuid.UUID
+func (_e *JobService_Expecter) ExecuteJob(ctx interface{}, _a1 interface{}) *JobService_ExecuteJob_Call {
+	return &JobService_ExecuteJob_Call{Call: _e.mock.On("ExecuteJob", ctx, _a1)}
+}
+
+func (_c *JobService_ExecuteJob_Call) Run(run func(ctx context.Context, _a1 uuid.UUID)) *JobService_ExecuteJob_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *JobService_ExecuteJob_Call) Return(_a0 error) *JobService_ExecuteJob_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
 // GetJob provides a mock function with given fields: ctx, _a1
 func (_m *JobService) GetJob(ctx context.Context, _a1 uuid.UUID) (jobworker.Job, error) {
 	ret := _m.Called(ctx, _a1)

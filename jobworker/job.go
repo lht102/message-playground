@@ -12,6 +12,7 @@ import (
 type JobService interface {
 	CreateJob(ctx context.Context, createJobCmd CreateJobCommand) (Job, error)
 	GetJob(ctx context.Context, uuid uuid.UUID) (Job, error)
+	ExecuteJob(ctx context.Context, uuid uuid.UUID) error
 }
 
 type MessageBus interface {
