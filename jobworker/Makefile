@@ -24,7 +24,7 @@ migrate-create:
 
 .PHONY: mocks
 mocks:
-	mockery --name=Service --with-expecter
+	mockery --name=JobService --with-expecter
 
 .PHONY: build
 build:

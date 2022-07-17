@@ -9,7 +9,7 @@ import (
 )
 
 func getJobHandler(
-	jobService jobworker.Service,
+	jobService jobworker.JobService,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

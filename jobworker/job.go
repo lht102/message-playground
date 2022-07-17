@@ -9,7 +9,7 @@ import (
 	"github.com/lht102/message-playground/jobworker/api"
 )
 
-type Service interface {
+type JobService interface {
 	CreateJob(ctx context.Context, createJobCmd CreateJobCommand) (Job, error)
 	GetJob(ctx context.Context, uuid uuid.UUID) (Job, error)
 }

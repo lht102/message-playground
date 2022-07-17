@@ -23,13 +23,13 @@ const (
 type Server struct {
 	httpServer *http.Server
 	router     *bunrouter.CompatRouter
-	jobService jobworker.Service
+	jobService jobworker.JobService
 	logger     *zap.Logger
 }
 
 func NewServer(
 	port int,
-	jobService jobworker.Service,
+	jobService jobworker.JobService,
 	logger *zap.Logger,
 ) *Server {
 	srv := &Server{

@@ -17,7 +17,7 @@ type Service struct {
 	logger     *zap.Logger
 }
 
-var _ jobworker.Service = (*Service)(nil)
+var _ jobworker.JobService = (*Service)(nil)
 
 func NewService(
 	entClient *ent.Client,

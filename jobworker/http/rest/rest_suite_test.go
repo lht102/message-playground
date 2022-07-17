@@ -17,14 +17,14 @@ type RESTTestSuite struct {
 	suite.Suite
 
 	server         *rest.Server
-	jobServiceMock *mocks.Service
+	jobServiceMock *mocks.JobService
 }
 
 func TestRest(t *testing.T) {
 	logger, err := zap.NewDevelopment()
 	require.NoError(t, err)
 
-	jobServiceMock := mocks.NewService(t)
+	jobServiceMock := mocks.NewJobService(t)
 	server := rest.NewServer(8081, jobServiceMock, logger)
 
 	s := &RESTTestSuite{
