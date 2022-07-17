@@ -1,10 +1,12 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/lht102/message-playground/jobworker"
+	"github.com/lht102/message-playground/jobworker/job"
 	"github.com/uptrace/bunrouter"
 )
 
@@ -24,13 +26,19 @@ func getJobHandler(
 			return
 		}
 
-		job, err := jobService.GetJob(ctx, jobUUID)
+		queriedJob, err := jobService.GetJob(ctx, jobUUID)
+		if errors.Is(err, job.ErrNotFound) {
+			respondErr(w, http.StatusNotFound, err.Error())
+
+			return
+		}
+
 		if err != nil {
 			respondErr(w, http.StatusInternalServerError, err.Error())
 
 			return
 		}
 
-		respond(w, http.StatusOK, jobworker.ParseJobAPIResponse(job))
+		respond(w, http.StatusOK, jobworker.ParseJobAPIResponse(queriedJob))
 	}
 }

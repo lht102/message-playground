@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lht102/message-playground/jobworker"
 	"github.com/lht102/message-playground/jobworker/api"
+	"github.com/lht102/message-playground/jobworker/job"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -58,6 +59,17 @@ func (s *RESTTestSuite) TestGetJobHandler() {
 		request := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/job/%s", jobUUID.String()), nil)
 		response, _ := testHTTPHandler(s.server, request)
 		s.Equal(http.StatusInternalServerError, response.StatusCode)
+	})
+
+	s.Run("Not found job uuid", func() {
+		jobUUID := uuid.MustParse("44fc89dd-48bd-4db4-9ed6-5c5a71ba2e69")
+		s.jobServiceMock.
+			EXPECT().
+			GetJob(mock.Anything, jobUUID).
+			Return(jobworker.Job{}, job.ErrNotFound)
+		request := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/job/%s", jobUUID.String()), nil)
+		response, _ := testHTTPHandler(s.server, request)
+		s.Equal(http.StatusNotFound, response.StatusCode)
 	})
 
 	s.Run("Invalid uuid format", func() {

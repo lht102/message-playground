@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -9,6 +10,8 @@ import (
 	"github.com/lht102/message-playground/jobworker/ent"
 	"go.uber.org/zap"
 )
+
+var ErrNotFound = errors.New("job not found")
 
 type Service struct {
 	entClient *ent.Client
@@ -59,6 +62,11 @@ func (s *Service) GetJob(
 ) (jobworker.Job, error) {
 	job, err := s.entClient.Job.Get(ctx, uuid)
 	if err != nil {
+		var notFoundErr *ent.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			return jobworker.Job{}, ErrNotFound
+		}
+
 		return jobworker.Job{}, fmt.Errorf("get job by id: %w", err)
 	}
 
