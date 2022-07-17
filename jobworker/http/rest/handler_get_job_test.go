@@ -1,68 +1,79 @@
 package rest_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lht102/message-playground/jobworker"
 	"github.com/lht102/message-playground/jobworker/api"
+	"github.com/lht102/message-playground/jobworker/job"
 	"github.com/stretchr/testify/mock"
 )
 
-func (s *RESTTestSuite) TestCreateJobHandler() {
+func (s *RESTTestSuite) TestGetJobHandler() {
 	s.Run("Success", func() {
-		createJobRequest := api.CreateJobRequest{
-			RequestUUID: uuid.MustParse("baa1e965-2881-4f39-acb5-8316bf79b457"),
-			Description: "todo",
+		jobUUID := uuid.MustParse("26013f20-4ede-46ef-bc08-693cc4a63ddb")
+		completedAt := time.Date(2022, 1, 1, 2, 0, 0, 0, time.UTC)
+		expectedResponse := api.JobResponse{
+			UUID:        jobUUID,
+			RequestUUID: uuid.New(),
+			State:       api.JobStateCompleted,
+			Description: "description",
+			CompletedAt: &completedAt,
+			CreatedAt:   time.Date(2022, 1, 1, 1, 0, 0, 0, time.UTC),
+			UpdatedAt:   time.Date(2022, 1, 1, 2, 0, 0, 0, time.UTC),
 		}
 		s.jobServiceMock.
 			EXPECT().
-			CreateJob(mock.Anything, jobworker.CreateJobCommand{
-				RequestUUID: createJobRequest.RequestUUID,
-				Description: createJobRequest.Description,
-			}).
+			GetJob(mock.Anything, jobUUID).
 			Return(jobworker.Job{
-				UUID: createJobRequest.RequestUUID,
+				UUID:        jobUUID,
+				RequestUUID: expectedResponse.RequestUUID,
+				State:       jobworker.JobState(expectedResponse.State),
+				Description: expectedResponse.Description,
+				CompletedAt: &completedAt,
+				CreatedAt:   expectedResponse.CreatedAt,
+				UpdatedAt:   expectedResponse.UpdatedAt,
 			}, nil)
-		requestBody, err := json.Marshal(createJobRequest)
-		s.Require().NoError(err)
-		request := httptest.NewRequest(http.MethodPost, "/api/job", bytes.NewBuffer(requestBody))
+		request := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/job/%s", jobUUID.String()), nil)
 		response, b := testHTTPHandler(s.server, request)
-		s.Equal(http.StatusCreated, response.StatusCode)
+		s.Equal(http.StatusOK, response.StatusCode)
 
-		var actualResponse api.CreateJobResponse
-		err = json.Unmarshal(b, &actualResponse)
+		var actualResponse api.JobResponse
+		err := json.Unmarshal(b, &actualResponse)
 		s.NoError(err)
-		s.Equal(api.CreateJobResponse{
-			JobUUID: createJobRequest.RequestUUID,
-		}, actualResponse)
+		s.Equal(expectedResponse, actualResponse)
 	})
 
-	s.Run("Some internal error with the creation", func() {
-		createJobRequest := api.CreateJobRequest{
-			RequestUUID: uuid.MustParse("987f2081-e2d0-4853-a358-a64af591b339"),
-			Description: "todo",
-		}
+	s.Run("Some internal error with the query", func() {
+		jobUUID := uuid.MustParse("46bfd468-574d-48d3-b7fb-4c28a02a00ce")
 		s.jobServiceMock.
 			EXPECT().
-			CreateJob(mock.Anything, jobworker.CreateJobCommand{
-				RequestUUID: createJobRequest.RequestUUID,
-				Description: createJobRequest.Description,
-			}).
+			GetJob(mock.Anything, jobUUID).
 			Return(jobworker.Job{}, errors.New("some error"))
-		requestBody, err := json.Marshal(createJobRequest)
-		s.Require().NoError(err)
-		request := httptest.NewRequest(http.MethodPost, "/api/job", bytes.NewBuffer(requestBody))
+		request := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/job/%s", jobUUID.String()), nil)
 		response, _ := testHTTPHandler(s.server, request)
 		s.Equal(http.StatusInternalServerError, response.StatusCode)
 	})
 
-	s.Run("Invalid request body format", func() {
-		request := httptest.NewRequest(http.MethodPost, "/api/job", bytes.NewBuffer([]byte("some bytes")))
+	s.Run("Not found job uuid", func() {
+		jobUUID := uuid.MustParse("44fc89dd-48bd-4db4-9ed6-5c5a71ba2e69")
+		s.jobServiceMock.
+			EXPECT().
+			GetJob(mock.Anything, jobUUID).
+			Return(jobworker.Job{}, job.ErrNotFound)
+		request := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/job/%s", jobUUID.String()), nil)
+		response, _ := testHTTPHandler(s.server, request)
+		s.Equal(http.StatusNotFound, response.StatusCode)
+	})
+
+	s.Run("Invalid uuid format", func() {
+		request := httptest.NewRequest(http.MethodGet, "/api/job/wrong-uuid", nil)
 		response, _ := testHTTPHandler(s.server, request)
 		s.Equal(http.StatusUnprocessableEntity, response.StatusCode)
 	})
