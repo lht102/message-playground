@@ -52,3 +52,21 @@ func (s *JobTestSuite) TestGetJob() {
 		UpdatedAt:   createdJob.UpdatedAt,
 	}, job)
 }
+
+func (s *JobTestSuite) TestExecuteJob() {
+	ctx := context.TODO()
+	createdJob, err := s.entClient.Job.
+		Create().
+		SetID(uuid.MustParse("7e187dfd-69d6-4c1d-a3d9-977cfea40ba2")).
+		SetRequestUUID(uuid.MustParse("54b8b835-31a4-4049-bc28-8fe819dd9179")).
+		SetState(jobworker.JobStateQueued).
+		SetDescription("another todo").
+		Save(ctx)
+	s.NoError(err)
+	err = s.jobService.ExecuteJob(ctx, createdJob.ID)
+	s.NoError(err)
+
+	updatedJob, err := s.entClient.Job.Get(ctx, createdJob.ID)
+	s.NoError(err)
+	s.Equal(jobworker.JobStateCompleted, updatedJob.State)
+}

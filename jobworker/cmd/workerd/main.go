@@ -20,6 +20,7 @@ import (
 	"github.com/lht102/message-playground/jobworker/http/rest"
 	"github.com/lht102/message-playground/jobworker/job"
 	"github.com/lht102/message-playground/jobworker/nats"
+	"github.com/lht102/message-playground/jobworker/subscription"
 	"go.uber.org/zap"
 )
 
@@ -74,8 +75,9 @@ func main() {
 	jobService := job.NewService(entClient, messageBus, logger)
 	httpServer := rest.NewServer(cfg.RestPort, jobService, logger)
 
-	if err := jobService.RunBackgroundWorker(ctx); err != nil {
-		logger.Fatal("Failed to run background worker", zap.Error(err))
+	subscriptionWorker := subscription.NewWorker("jobworker_queue", jobService, messageBus)
+	if err := subscriptionWorker.Run(ctx); err != nil {
+		logger.Fatal("Failed to run subscriptino worker", zap.Error(err))
 	}
 
 	go func() {

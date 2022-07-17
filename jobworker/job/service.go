@@ -6,28 +6,27 @@ import (
 
 	"github.com/google/uuid"
 	jobworker "github.com/lht102/message-playground/jobworker"
-	"github.com/lht102/message-playground/jobworker/api"
 	"github.com/lht102/message-playground/jobworker/ent"
 	"go.uber.org/zap"
 )
 
 type Service struct {
-	entClient  *ent.Client
-	messageBus jobworker.MessageBus
-	logger     *zap.Logger
+	entClient *ent.Client
+	producer  jobworker.Producer
+	logger    *zap.Logger
 }
 
 var _ jobworker.JobService = (*Service)(nil)
 
 func NewService(
 	entClient *ent.Client,
-	messageBus jobworker.MessageBus,
+	producer jobworker.Producer,
 	logger *zap.Logger,
 ) *Service {
 	return &Service{
-		entClient:  entClient,
-		messageBus: messageBus,
-		logger:     logger,
+		entClient: entClient,
+		producer:  producer,
+		logger:    logger,
 	}
 }
 
@@ -114,20 +113,6 @@ func (s *Service) ExecuteJob(
 	return nil
 }
 
-func (s *Service) RunBackgroundWorker(ctx context.Context) error {
-	if err := s.messageBus.SubscribeJob(ctx, "jobworker_queue", func(resp api.JobResponse) error {
-		if err := s.ExecuteJob(ctx, resp.UUID); err != nil {
-			return fmt.Errorf("execute job: %w", err)
-		}
-
-		return nil
-	}, api.JobStateQueued); err != nil {
-		return fmt.Errorf("subscribe job: %w", err)
-	}
-
-	return nil
-}
-
 func (s *Service) createOrUpdateJob(
 	ctx context.Context,
 	do func(context.Context, *ent.JobClient) (*ent.Job, error),
@@ -143,7 +128,7 @@ func (s *Service) createOrUpdateJob(
 		job = ent.ParseJobFromModel(updatedJob)
 
 		// FIXME: should not publish mesage if commit transaction fails
-		if err := s.messageBus.PublishJob(ctx, jobworker.ParseJobAPIResponse(job)); err != nil {
+		if err := s.producer.PublishJob(ctx, jobworker.ParseJobAPIResponse(job)); err != nil {
 			return fmt.Errorf("publish job: %w", err)
 		}
 
