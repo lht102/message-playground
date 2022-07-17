@@ -48,3 +48,9 @@ linters:
     - whitespace
     - wrapcheck
     - wsl
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - goerr113
