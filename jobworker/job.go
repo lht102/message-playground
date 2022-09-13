@@ -63,7 +63,7 @@ type Job struct {
 func (j *Job) Execute() {
 	if j.State != JobStateCompleted {
 		// simulate running job with processing time
-		// nolint: gosec
+		//nolint: gosec
 		time.Sleep(time.Duration(rand.Intn(2000)) * time.Millisecond)
 
 		j.State = JobStateCompleted

@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	readTimeout     = 10 * time.Second
-	writeTimeout    = 10 * time.Second
-	shutdownTimeout = 10 * time.Second
+	readHeaderTimeout = 5 * time.Second
+	readTimeout       = 10 * time.Second
+	writeTimeout      = 10 * time.Second
+	shutdownTimeout   = 10 * time.Second
 )
 
 type Server struct {
@@ -41,10 +42,11 @@ func NewServer(
 	srv.routes()
 
 	httpSrv := &http.Server{
-		Addr:         ":" + strconv.Itoa(port),
-		Handler:      srv.router,
-		ReadTimeout:  readTimeout,
-		WriteTimeout: writeTimeout,
+		Addr:              ":" + strconv.Itoa(port),
+		Handler:           srv.router,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
 	}
 
 	srv.httpServer = httpSrv

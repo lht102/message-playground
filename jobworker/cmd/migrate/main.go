@@ -26,7 +26,7 @@ func main() {
 
 	dir, err := atlas.NewLocalDir("./migrations")
 	if err != nil {
-		// nolint: gocritic
+		//nolint: gocritic
 		log.Fatalf("Failed creating atlas migration directory: %v", err)
 	}
 
