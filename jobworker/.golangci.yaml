@@ -23,7 +23,6 @@ linters:
     - staticcheck
     - goprintffuncname
     - gosec
-    - ifshort
     - importas
     - lll
     - misspell
