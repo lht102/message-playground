@@ -13,7 +13,8 @@ func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {
 
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
+
 			panic(v)
 		}
 	}()

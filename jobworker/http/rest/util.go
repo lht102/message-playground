@@ -19,7 +19,10 @@ func decode(r *http.Request, v any) error {
 func respond(w http.ResponseWriter, statCode int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statCode)
-	_ = json.NewEncoder(w).Encode(v)
+
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		panic(err)
+	}
 }
 
 func respondErr(w http.ResponseWriter, statusCode int, message string) {

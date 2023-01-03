@@ -59,7 +59,7 @@ func publish(
 	go func() {
 		for {
 			select {
-			case _ = <-publishCh:
+			case <-publishCh:
 			case confirmed := <-confirmCh:
 				if confirmed.DeliveryTag > 0 {
 					if !confirmed.Ack {

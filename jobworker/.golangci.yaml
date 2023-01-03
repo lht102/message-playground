@@ -1,52 +1,67 @@
 run:
+  tests: true
   timeout: 5m
 
 linters:
   disable-all: true
   enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - asasalint
+    - asciicheck
+    - bidichk
     - bodyclose
-    - gomodguard
-    - dupl
+    - contextcheck
     - durationcheck
+    - errchkjson
     - errorlint
     - exhaustive
     - exportloopref
-    - gochecknoglobals
-    - gochecknoinits
-    - goconst
     - gocritic
-    - gocyclo
-    - godot
-    - goerr113
-    - goheader
-    - goimports
-    - staticcheck
-    - goprintffuncname
     - gosec
-    - importas
-    - lll
-    - misspell
-    - nakedret
-    - nestif
+    - loggercheck
+    - makezero
     - nilerr
-    - nlreturn
     - noctx
-    - nolintlint
-    - prealloc
-    - predeclared
+    - reassign
     - revive
     - rowserrcheck
     - sqlclosecheck
+    - dogsled
+    - errname
+    - forcetypeassert
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - godot
+    - goimports
+    - grouper
+    - importas
+    - lll
+    - misspell
     - stylecheck
+    - tagliatelle
     - testpackage
     - thelper
     - tparallel
     - unconvert
-    - unparam
+    - usestdlibvars
     - wastedassign
     - whitespace
     - wrapcheck
     - wsl
+
+linters-settings:
+  tagliatelle:
+    case:
+      use-field-name: false
+      rules:
+        json: snake
 
 issues:
   exclude-rules:
