@@ -9,7 +9,7 @@ import (
 )
 
 type MessageBus struct {
-	conn *amqp.Connection
+	_ *amqp.Connection
 }
 
 var _ jobworker.MessageBus = (*MessageBus)(nil)
